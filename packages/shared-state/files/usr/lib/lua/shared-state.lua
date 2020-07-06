@@ -2,7 +2,7 @@
 
 --! Minimalistic CRDT-like shared state structure suitable for mesh networks
 --!
---! Copyright (C) 2019  Gioacchino Mazzurco <gio@altermundi.net>
+--! Copyright (C) 2019-2020  Gioacchino Mazzurco <gio@altermundi.net>
 --!
 --! This program is free software: you can redistribute it and/or modify
 --! it under the terms of the GNU Affero General Public License version 3 as
@@ -20,7 +20,6 @@ local fs = require("nixio.fs")
 local JSON = require("luci.jsonc")
 local nixio = require("nixio")
 local uci = require("uci")
-local utils = require("lime.utils")
 
 local function SharedState(dataType, pLogger)
 	--! Name of the CRDT is mandatory
@@ -157,7 +156,16 @@ local function SharedState(dataType, pLogger)
 	end
 
 	function sharedState.httpRequest(url, body)
-		local cmd = "uclient-fetch -q -O- --timeout=3 --post-data='"..utils.shell_quote(body).."' '"..url.."'"
+		local tmpfname = os.tmpname()
+
+		local tmpfd = io.open(tmpfname, "w")
+		tmpfd:write(body)
+		tmpfd:close()
+		tmpfd = nil
+		
+		local cmd = "uclient-fetch -q -O- --timeout=3 "
+		cmd = cmd.."--post-file='"..tmpfname.."' '"..url.."' ; "
+		cmd = cmd.."rm -f '"..tmpfname.."'"
 		local fd = io.popen(cmd)
 
 		if not fd then
