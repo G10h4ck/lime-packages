@@ -99,5 +99,32 @@ function batadv.setup_interface(ifname, args)
 	uci:save("network")
 end
 
+function batadv.runOnDevice(linuxDev, args)
+	args = args or {}
+	local vlanId = args[2] or "%N1"
+	local vlanProto = args[3] or "8021ad"
+
+	local mtu = 1532
+
+	if not tonumber(vlanId) then
+		vlanId = 29 + (utils.applyNetTemplate10(vlanId) - 13) % 256
+	end
+
+	local devName = network.createVlan(linuxDev, vlanId, vlanProto)
+	local ifName = network.limeIfNamePrefix..linuxDev .. "_batadv"
+
+	local ifaceConf = {
+		name   = ifName,
+		proto  = "batadv_hardif",
+		auto   = "1",
+		device = devName,
+		master = "bat0"
+	}
+
+	local libubus = require("ubus");
+	local ubus = libubus.connect()
+	ubus:call('network', 'add_dynamic', ifaceConf)
+	ubus:call('network.interface.'..ifName, 'up', {})
+end
 
 return batadv

@@ -129,4 +129,6 @@ function babeld.setup_interface(ifname, args)
 	uci:save("babeld")
 end
 
+function babeld.runOnDevice(linuxDev, args) end
+
 return babeld

@@ -602,4 +602,20 @@ function utils.is_dsa()
     return false
 end
 
+function utils.dumptable(table, nesting)
+  local nesting = nesting or 1
+  if type(table) ~= "table" then
+    print("dumptable: first argument is expected to be a table but you passed a", type(table), table)
+  else
+    if next(table) == nil then
+      print(table, "empty")
+    else
+      for k,v in pairs(table) do
+        print(string.rep('\t', nesting), k, ' = ', v)
+        if type(v) == 'table' then dumptable(v, nesting+1) end
+      end
+    end
+  end
+end
+
 return utils

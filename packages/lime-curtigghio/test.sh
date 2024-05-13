@@ -273,9 +273,15 @@ function flash_all()
 
 function dev_packages_paths()
 {
-	echo package/network/config/netifd \
-	     package/network/config/wifi-scripts \
-	     package/network/services/hostapd
+	echo package/feeds/libremesh/lime-system \
+	     package/feeds/libremesh/lime-proto-batadv
+
+#	     package/feeds/libremesh/lime-proto-babeld \
+#	     package/feeds/libremesh/lime-proto-anygw
+
+#	echo package/network/config/netifd \
+#	     package/network/config/wifi-scripts \
+#	     package/network/services/hostapd
 }
 
 function clean_packages()
@@ -313,11 +319,10 @@ function upgrade_packages()
 
 	local mInstalls=""
 
-	for mPackageName in \
-		netifd \
-		hostapd-common wpad-basic-mbedtls wifi-scripts ; do
+	for mPackageName in $(dev_packages_paths) ; do
+		mPackageName="$(basename "$mPackageName")"
 
-		local mPkgPath="$(ls "$OPENWRT_BUILD_DIR/bin/packages/$dPkgArch/base/$mPackageName"*.ipk)"
+		local mPkgPath="$(ls "$OPENWRT_BUILD_DIR/bin/packages/$dPkgArch/"*"/$mPackageName"*.ipk | head -n 1)"
 		scp -O "$mPkgPath" root@[${dAddress}]:/tmp/
 
 		mInstalls="$mInstalls \"/tmp/$(basename $mPkgPath)\""
@@ -426,10 +431,10 @@ function DO_NOT_CALL_prepareHostapdChangesForSubmission()
 
 #flash_all
 
-#build_packages
-#upgrade_packages_all
+build_packages
+upgrade_packages_all
 
-dTestUbusDev ${hlk1Ipll}
+#dTestUbusDev ${hlk1Ipll}
 
 #conf_all
 
